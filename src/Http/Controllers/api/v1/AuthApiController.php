@@ -17,10 +17,17 @@ class AuthApiController extends BaseApiController {
      * @return mixed
      */
     public function login(LoginRequest $request) {
-        if (!$this->validateRequest($request->get('username'), $request->get('password'))) {
+        if (!$this->validateRequest(
+            $request->get('username'),
+            $request->get('password')
+        )) {
             return RestResponse::badRequest(['error' => 'Invalid login details']);
         }
+
         $configuration = Configuration::find(1);
+        if (!isset($configuration))
+            return RestResponse::badRequest(['errors' => 'Some problem on the server side. Please contact admin team.']);
+
         return RestResponse::done('auth_token', $configuration->authorization_code);
     }
 
