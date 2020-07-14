@@ -10,8 +10,6 @@ use Woohoo\GoapptivCoupon\Models\Configuration;
 
 class AuthApiController extends BaseApiController {
 
-    static $username = 'GoApptivDigital1';
-
     /**
      * Get auth details
      *
