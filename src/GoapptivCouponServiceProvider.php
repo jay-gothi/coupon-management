@@ -67,7 +67,7 @@ class GoapptivCouponServiceProvider extends ServiceProvider {
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('auth_token', AuthMiddleware::class);
         $router->aliasMiddleware('ga_token', GoApptivTokenMiddleware::class);
-        Route::prefix('woohoo/api/v1')->group(function () {
+        Route::prefix('coupon_services/api/v1')->group(function () {
             $this->loadRoutesFrom(__DIR__ . '/api_v1.php');
         });
     }
