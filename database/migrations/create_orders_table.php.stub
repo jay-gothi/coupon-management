@@ -1,0 +1,80 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateOrdersTable extends Migration {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up() {
+        Schema::create('woohoo_addresses', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('email');
+            $table->string('telephone');
+
+            $table->string('line1');
+            $table->string('line2');
+            $table->string('city');
+            $table->string('region');
+            $table->string('country');
+            $table->string('postcode', 10);
+            $table->timestamps();
+        });
+
+        Schema::create('woohoo_orders', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('order_id')->nullable();
+            $table->string('ref_no');
+            $table->bigInteger('address_id');
+            $table->bigInteger('billing_id')->nullable();
+            $table->boolean('sync_only')->default(false);
+            $table->string('coupon_code')->nullable();
+            $table->string('delivery_mode');
+            $table->string('status')->default('PROCESSING');
+            $table->timestamps();
+        });
+
+        Schema::create('woohoo_order_items', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->bigInteger('order_id');
+            $table->string('sku');
+            $table->decimal('price', 10, 2)->default(0);
+            $table->decimal('qty', 10, 2)->default(0);
+            $table->decimal('currency', 10, 2)->default(0);
+            $table->string('giftMessage')->nullable();
+            $table->string('theme')->nullable();
+        });
+
+        Schema::create('woohoo_cards', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->bigInteger('order_id');
+            $table->string('sku');
+            $table->string('product_name');
+            $table->string('card_number', 1000)->nullable();
+            $table->string('card_pin', 1000)->nullable();
+            $table->string('activation_code')->nullable();
+            $table->string('activation_url')->nullable();
+            $table->string('recipient_details', 1000)->nullable();
+            $table->decimal('amount', 10, 2)->default(0);
+            $table->dateTime('validity')->nullable();
+            $table->timestamps();
+        });
+
+
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down() {
+        Schema::dropIfExists('orders');
+    }
+}
