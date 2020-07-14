@@ -30,7 +30,7 @@ class CreateOrderRequest extends Request {
             'email' => array('required'),
             'mobile' => array('required'),
             'amount' => array('required'),
-            'id' => array('required', "unique:{$orderTable},id"),
+            'id' => array('required'),
             'address' => array('required', 'array'),
             'address.line' => array('required'),
             'address.landmark' => array('required'),

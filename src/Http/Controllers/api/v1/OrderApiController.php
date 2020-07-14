@@ -30,6 +30,10 @@ class OrderApiController extends BaseApiController {
      * @return mixed
      */
     public function create(CreateOrderRequest $request) {
+        $totalOrders = Order::where('ref_no', "GA-{$request->get('id')}")->count();
+        if ($totalOrders > 0)
+            return RestResponse::badRequest(['id' => 'id is already taken']);
+
         $orderJob = new GenerateWoohooCoupon(
             $request->getFields()->toArray(),
             $request->get('sku')
