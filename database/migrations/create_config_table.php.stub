@@ -59,8 +59,8 @@ class CreateConfigTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('products');
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('woohoo_products');
+        Schema::dropIfExists('woohoo_categories');
         Schema::dropIfExists('woohoo_configuration');
     }
 }
