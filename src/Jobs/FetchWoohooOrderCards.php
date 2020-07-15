@@ -3,6 +3,7 @@
 namespace Woohoo\GoapptivCoupon\Jobs;
 
 use Carbon\Carbon;
+use DateTime;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
@@ -119,7 +120,7 @@ class FetchWoohooOrderCards implements ShouldQueue {
                     "activation_code" => $card['activationCode'],
                     "activation_url" => $card['activationUrl'],
                     "amount" => $card['amount'],
-                    "validity" => $card['validity'],
+                    "validity" => Carbon::createFromFormat(DateTime::ATOM, $card['validity']),
                     'recipient_details' => json_encode($card['recipientDetails'])
                 ]);
                 $cardModel->fill([
