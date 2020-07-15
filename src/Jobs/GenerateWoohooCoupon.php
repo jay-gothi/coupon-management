@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Address;
 use Woohoo\GoapptivCoupon\Models\Order;
 use Woohoo\GoapptivCoupon\Models\OrderItem;
+use Woohoo\GoapptivCoupon\Utils;
 
 class GenerateWoohooCoupon implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -75,7 +76,7 @@ class GenerateWoohooCoupon implements ShouldQueue {
             "postcode" => $this->request['address']['pin_code'],
         ]);
         $order = Order::create([
-            'ref_no' => "GA-{$this->request['id']}",
+            'ref_no' => Utils::convertToRefNo($this->request['id']),
             'address_id' => $address->id,
             'billing_id' => $address->id,
             'coupon_code' => '',

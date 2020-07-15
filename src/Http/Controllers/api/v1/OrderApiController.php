@@ -7,6 +7,7 @@ use Woohoo\GoapptivCoupon\Http\Controllers\RestResponse;
 use Woohoo\GoapptivCoupon\Http\Requests\CreateOrderRequest;
 use Woohoo\GoapptivCoupon\Jobs\GenerateWoohooCoupon;
 use Woohoo\GoapptivCoupon\Models\Order;
+use Woohoo\GoapptivCoupon\Utils;
 
 class OrderApiController extends BaseApiController {
 
@@ -30,9 +31,9 @@ class OrderApiController extends BaseApiController {
      * @return mixed
      */
     public function create(CreateOrderRequest $request) {
-        $totalOrders = Order::where('ref_no', "GA-{$request->get('id')}")->count();
+        $totalOrders = Order::where('ref_no', Utils::convertToRefNo($request->get('id')))->count();
         if ($totalOrders > 0)
-            return RestResponse::badRequest(['id' => 'id is already taken']);
+            return RestResponse::badRequest(['id' => 'id should be an unique value.']);
 
         $orderJob = new GenerateWoohooCoupon(
             $request->getFields()->toArray(),

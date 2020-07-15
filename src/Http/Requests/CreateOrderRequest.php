@@ -5,6 +5,7 @@ namespace Woohoo\GoapptivCoupon\Http\Requests;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Order;
+use Woohoo\GoapptivCoupon\Models\Product;
 
 class CreateOrderRequest extends Request {
 
@@ -23,9 +24,9 @@ class CreateOrderRequest extends Request {
      * @return array
      */
     public function rules() {
-        $orderTable = Order::$TABLE;
+        $productTable = Product::$TABLE;
         return [
-            'sku' => array('required'),
+            'sku' => array('required', "exists:$productTable,sku"),
             'full_name' => array('required'),
             'email' => array('required'),
             'mobile' => array('required'),

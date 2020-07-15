@@ -87,4 +87,14 @@ class Utils {
 
         return $newErrors;
     }
+
+    /**
+     * Convert to ref no
+     *
+     * @param $id
+     * @return string
+     */
+    public static function convertToRefNo($id) {
+        return sprintf("GA-%s", $id);
+    }
 }
