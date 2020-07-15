@@ -75,6 +75,9 @@ class CreateOrdersTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('woohoo_cards');
+        Schema::dropIfExists('woohoo_order_items');
+        Schema::dropIfExists('woohoo_orders');
+        Schema::dropIfExists('woohoo_addresses');
     }
 }
