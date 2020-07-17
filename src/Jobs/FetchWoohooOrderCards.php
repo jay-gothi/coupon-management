@@ -44,6 +44,7 @@ class FetchWoohooOrderCards implements ShouldQueue {
             $response = $this->getClient()->request('GET', $this->getUrl(), []);
             if ($response->getStatusCode() == 200) {
                 Log::info('Saving product...');
+                Log::info($response->getBody());
                 $this->saveData(json_decode($response->getBody(), true));
                 Log::info('FETCHED WOOHOO CARDS FOR ORDER.');
             }

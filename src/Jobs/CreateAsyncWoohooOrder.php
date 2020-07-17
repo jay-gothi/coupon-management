@@ -54,15 +54,19 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
                 || $response->getStatusCode() == 201
                 || $response->getStatusCode() == 202) {
                 Log::info('Saving order details...');
+                Log::info($response->getBody());
                 $this->saveData(json_decode($response->getBody(), true));
                 Log::info("COUPON REQUEST RAISED.");
             }
         } catch (RequestException $e) {
+            $this->fail($e);
             Log::info("COUPON GENERATION FAILED.");
+            Log::info($e->getResponse()->getBody());
             Log::info($e->getMessage());
         } catch (GuzzleException $e) {
+            $this->fail($e);
             Log::error($e->getMessage());
-            Log::info("TOKEN GENERATION FAILED.");
+            Log::info("COUPON GENERATION FAILED.");
         }
     }
 
