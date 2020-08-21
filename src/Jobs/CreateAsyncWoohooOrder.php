@@ -131,13 +131,13 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      * Prepare Data
      *
      * @return array
-    php artisan queue:retry all
+
      */
     private function prepareData() {
         return [
             "address" => [
                 "firstname" => $this->order->address->first_name,
-                "lastname" => "",
+                "lastname" => "GoApptiv",
                 "email" => $this->order->address->email,
                 "telephone" => $this->order->address->telephone,
                 "line1" => $this->order->address->line,
@@ -158,8 +158,6 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
                 "price" => $this->order->items[0]->price,
                 "qty" => 1,
                 "currency" => 356,
-                "giftMessage" => "",
-                "theme" => "bwi"
             ]],
             "syncOnly" => false,
             "deliveryMode" => "API"

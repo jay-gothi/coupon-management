@@ -4,7 +4,7 @@ namespace Woohoo\GoapptivCoupon\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Woohoo\GoapptivCoupon\Jobs\FetchWoohooOrderCards;
+use Woohoo\GoapptivCoupon\Jobs\FetchWoohooOrderStatus;
 use Woohoo\GoapptivCoupon\Models\Order;
 
 // TODO:: cron: every 5 min
@@ -29,7 +29,7 @@ class FetchCards extends Command {
         Log::info("Fetch processing orders...");
         $orders = Order::where('status', "PROCESSING")->paginate(10);
         $orders->map(function ($order) {
-            dispatch(new FetchWoohooOrderCards($order->order_id));
+            dispatch(new FetchWoohooOrderStatus($order->order_id));
         });
         Log::info("INITIATED CARDS FETCH.");
     }

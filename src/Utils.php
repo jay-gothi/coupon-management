@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Woohoo\GoapptivCoupon;
-
 
 class Utils {
 
@@ -14,6 +12,9 @@ class Utils {
 
     /** @var int pagination default length */
     static $PAGE_LENGTH = 50;
+
+    static $COMPLETE = "COMPLETE";
+    static $CANCELED = "CANCELED";
 
     /**
      * Encrypt signature

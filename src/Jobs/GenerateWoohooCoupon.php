@@ -65,7 +65,7 @@ class GenerateWoohooCoupon implements ShouldQueue {
     private function createOrder() {
         $address = Address::create([
             "first_name" => $this->request['full_name'],
-            "last_name" => "",
+            "last_name" => "GoApptiv",
             "email" => $this->request['email'],
             "telephone" => $this->request['mobile'],
             "line1" => $this->request['address']['line'],
