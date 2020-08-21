@@ -49,6 +49,7 @@ class CreateConfigTable extends Migration {
             $table->string('images_small')->nullable();
             $table->string('images_mobile')->nullable();
             $table->string('expiry')->nullable();
+            $table->longText('terms')->nullable();
             $table->timestamps();
         });
     }
