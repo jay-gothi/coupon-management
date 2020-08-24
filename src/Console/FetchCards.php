@@ -29,7 +29,7 @@ class FetchCards extends Command {
         Log::info("Fetch processing orders...");
         $orders = Order::where('status', "PROCESSING")->paginate(10);
         $orders->map(function ($order) {
-            dispatch(new FetchWoohooOrderStatus($order->order_id));
+            dispatch(new FetchWoohooOrderStatus($order->ref_no, $order->order_id));
         });
         Log::info("INITIATED CARDS FETCH.");
     }

@@ -25,13 +25,17 @@ class FetchWoohooOrderStatus implements ShouldQueue {
     /** @var int order id */
     private $id;
 
+    /** @var string ref no */
+    private $ref_no;
+
     /**
      * Constructor
      *
      * @param $id
      */
-    public function __construct($id) {
+    public function __construct($ref_no, $id) {
         $this->id = $id;
+        $this->ref_no = $ref_no;
     }
 
     /**
@@ -103,7 +107,7 @@ class FetchWoohooOrderStatus implements ShouldQueue {
         return sprintf(
             "%s%s",
             env("WOOHOO_REWARDS_ENDPOINT"),
-            "/rest/v3/order/{$this->id}/status"
+            "/rest/v3/order/{$this->ref_no}/status"
         );
     }
 
