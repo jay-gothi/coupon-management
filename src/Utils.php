@@ -14,7 +14,7 @@ class Utils {
     static $PAGE_LENGTH = 50;
 
     static $COMPLETE = "COMPLETE";
-    static $CANCELED = "CANCELED";
+    static $CANCELLED = "CANCELLED";
 
     /**
      * Encrypt signature
