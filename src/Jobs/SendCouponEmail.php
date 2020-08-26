@@ -46,7 +46,7 @@ class SendCouponEmail implements ShouldQueue {
                 "firm_name" => $this->card['recipient_details']['name'],
                 "vendor" => $this->card['product_name'],
                 "amount" => $this->card['amount'],
-                "term_conditions" => $this->card["terms"],
+                "term_conditions" => $product->terms,
                 "expiry_date" => $this->card['validity'],
                 "card_no" => Utils::decrypt($this->card['card_number']),
                 "card_pin" => Utils::decrypt($this->card['card_pin']),
