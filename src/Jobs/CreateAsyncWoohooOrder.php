@@ -140,10 +140,10 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
                 "lastname" => "GoApptiv",
                 "email" => $this->order->address->email,
                 "telephone" => $this->order->address->telephone,
-                "line1" => $this->order->address->line,
-                "line2" => $this->order->address->landmark,
+                "line1" => $this->order->address->line1,
+                "line2" => $this->order->address->line2,
                 "city" => $this->order->address->city,
-                "region" => $this->order->address->state,
+                "region" => $this->order->address->region,
                 "country" => "IN",
                 "postcode" => $this->order->address->pin_code,
                 "billToThis" => true

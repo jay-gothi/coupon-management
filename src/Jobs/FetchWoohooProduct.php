@@ -120,6 +120,11 @@ class FetchWoohooProduct implements ShouldQueue {
             'sku' => $product['sku'],
             'name' => $product['name']
         ]);
+        $terms = "<ul>";
+        foreach($product['tnc']['content'] as $term) {
+            $terms = $terms . "<li>" . $term . "</li>";
+        }
+        $terms = $terms . "</ul>";
         $productModel->fill([
             'product_id' => $product['id'],
             'description' => $product['description'],
@@ -130,7 +135,8 @@ class FetchWoohooProduct implements ShouldQueue {
             'denominations' => json_encode($product['price']['denominations']),
             'images_thumbnail' => $product['images']['thumbnail'],
             'images_small' => $product['images']['small'],
-            'images_mobile' => $product['images']['mobile']
+            'images_mobile' => $product['images']['mobile'],
+            'terms' => $product['tnc']['content']
         ]);
         $productModel->save();
     }
