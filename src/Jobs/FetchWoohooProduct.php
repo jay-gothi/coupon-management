@@ -121,9 +121,10 @@ class FetchWoohooProduct implements ShouldQueue {
             'name' => $product['name']
         ]);
         $terms = "<ul>";
-        foreach($product['tnc']['content'] as $term) {
-            $terms = $terms . "<li>" . $term . "</li>";
-        }
+        if (isset($product['tnc']) && isset($product['tnc']['content']))
+            foreach($product['tnc']['content'] as &$term) {
+                $terms = $terms . "<li>" . $term . "</li>";
+            }
         $terms = $terms . "</ul>";
         $productModel->fill([
             'product_id' => $product['id'],
