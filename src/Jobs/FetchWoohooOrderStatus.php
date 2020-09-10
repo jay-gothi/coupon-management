@@ -56,9 +56,11 @@ class FetchWoohooOrderStatus implements ShouldQueue {
         } catch (RequestException $e) {
             Log::error($e->getMessage());
             Log::info("CARDS FETCH FAILED.");
+            $this->markOrderFailed();
         } catch (GuzzleException $e) {
             Log::error($e->getMessage());
             Log::info("CARDS FETCH FAILED.");
+            $this->markOrderFailed();
         }
     }
 
@@ -118,10 +120,23 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      */
     private function saveData($data) {
         $order = Order::where('order_id', $this->id)->first();
+        $order->attempts = $order->attempts + 1;
+
         if ($data['status'] == Utils::$COMPLETE) {
             dispatch(new FetchWoohooOrderCards($this->id));
-        } else if ($data['status'] == Utils::$CANCELLED) {
+        } else if (($data['status'] == Utils::$CANCELLED) || ($order->attempts >= 2)) {
             $order->status = Utils::$CANCELLED;
         }
+        $order->save();
+    }
+
+    /**
+     * Mark order as failed
+     */
+    private function markOrderFailed() {
+        $order = Order::where('order_id', $this->id)->first();
+        $order->attempts = $order->attempts + 1;
+        $order->status = Utils::$CANCELLED;
+        $order->save();
     }
 }
