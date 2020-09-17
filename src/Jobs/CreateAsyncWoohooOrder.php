@@ -148,6 +148,19 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
                 "postcode" => $this->order->address->pin_code,
                 "billToThis" => true
             ],
+            "billing" => [
+                "firstname" => $this->order->address->first_name,
+                "lastname" => "GoApptiv",
+                "email" => $this->order->address->email,
+                "telephone" => $this->order->address->telephone,
+                "line1" => $this->order->org_code,
+                "line2" => $this->order->address->line2,
+                "city" => $this->order->address->city,
+                "region" => $this->order->address->region,
+                "country" => "IN",
+                "postcode" => $this->order->address->pin_code,
+                "billToThis" => true
+            ],
             "payments" => [[
                 "code" => "svc",
                 "amount" => $this->order->items[0]->price
