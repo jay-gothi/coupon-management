@@ -58,7 +58,7 @@ class FetchWoohooCategories extends Command {
         return sprintf(
             "%s%s",
             env("WOOHOO_REWARDS_ENDPOINT"),
-            "/rest/v3/catalog/categories"
+            "/rest/v3/catalog/categories?q=1"
         );
     }
 
