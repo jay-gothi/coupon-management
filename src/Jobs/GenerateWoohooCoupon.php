@@ -82,7 +82,8 @@ class GenerateWoohooCoupon implements ShouldQueue {
             'coupon_code' => '',
             'status' => 'PENDING',
             'delivery_mode' => 'API',
-            'org_code' => $this->request['org_code']
+            'org_code' => $this->request['org_code'],
+            'org_name' => $this->request['org_name']
         ]);
         OrderItem::create([
             "order_id" => $order->id,

@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateAccountsTable extends Migration {
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up() {
+        Schema::create('woohoo_accounts', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('org_code');
+            $table->string('endpoint');
+            $table->string('client_id');
+            $table->string('client_secret');
+            $table->string('login_username');
+            $table->string('login_password');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down() {
+        Schema::dropIfExists('woohoo_accounts');
+    }
+}
