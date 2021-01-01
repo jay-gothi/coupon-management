@@ -15,11 +15,14 @@ class CreateAccountsTable extends Migration {
         Schema::create('woohoo_accounts', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('org_code');
-            $table->string('endpoint');
+            $table->longText('endpoint');
             $table->string('client_id');
             $table->string('client_secret');
             $table->string('login_username');
             $table->string('login_password');
+            $table->string('status')->default('active');
+            $table->string('authorization_code')->nullable();
+            $table->string('token')->nullable();
         });
     }
 

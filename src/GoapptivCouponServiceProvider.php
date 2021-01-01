@@ -30,6 +30,7 @@ class GoapptivCouponServiceProvider extends ServiceProvider {
                 $this->publishes([
                     __DIR__ . '/../database/migrations/create_config_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_config_table.php'),
                     __DIR__ . '/../database/migrations/create_orders_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_orders_table.php'),
+                    __DIR__ . '/../database/migrations/create_accounts_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_accounts_table.php'),
                 ], 'migrations');
             }
 

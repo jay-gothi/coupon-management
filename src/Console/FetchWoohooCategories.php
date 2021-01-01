@@ -9,7 +9,7 @@ use GuzzleHttp\Exception\RequestException;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Category;
-use Woohoo\GoapptivCoupon\Models\Configuration;
+use Woohoo\GoapptivCoupon\Models\Account;
 use Woohoo\GoapptivCoupon\Utils;
 
 // TODO:: cron: every month
@@ -17,6 +17,9 @@ class FetchWoohooCategories extends Command {
 
     /** @var string request woohoo product categories command */
     protected $signature = 'fetch_woohoo_categories';
+
+    /** Account account model */
+    protected $account;
 
     /**
      * Constructor
@@ -32,6 +35,10 @@ class FetchWoohooCategories extends Command {
      */
     public function handle() {
         Log::info("REQUESTING WOOHOO CATEGORIES:");
+
+        Log::info("Fetching first account...");
+        $this->account = Account::where('status', 'active')->first();
+
         Log::info("Requesting categories...");
         try {
             $response = $this->getClient()->request('GET', $this->getUrl(), []);
@@ -57,7 +64,7 @@ class FetchWoohooCategories extends Command {
     private function getUrl() {
         return sprintf(
             "%s%s",
-            env("WOOHOO_REWARDS_ENDPOINT"),
+            $this->account->endpoint,
             "/rest/v3/catalog/categories"
         );
     }
@@ -69,7 +76,7 @@ class FetchWoohooCategories extends Command {
      */
     private function getClient() {
         return new Client([
-            'base_uri' => env("WOOHOO_REWARDS_ENDPOINT"),
+            'base_uri' => $this->account->endpoint,
             'timeout' => 10.0,
             'headers' => $this->getHeaders()
         ]);
@@ -81,13 +88,12 @@ class FetchWoohooCategories extends Command {
      * @return array
      */
     private function getHeaders() {
-        $configuration = Configuration::with([])->find(1);
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*',
-            'dateAtClient' => Carbon::now()->toISOString(),
+            'dateAtClient' => Carbon::now()->format('Y-m-d\TH:i:s.u\Z'),
             'signature' => $this->generateSignature(),
-            'Authorization' => 'Bearer ' . $configuration->token,
+            'Authorization' => 'Bearer ' . $this->account->token,
         ];
     }
 
@@ -99,7 +105,7 @@ class FetchWoohooCategories extends Command {
             "%s&%s",
             'GET',
             rawurlencode($this->getUrl())
-        ));
+        ), $this->account->client_secret);
     }
 
     /**

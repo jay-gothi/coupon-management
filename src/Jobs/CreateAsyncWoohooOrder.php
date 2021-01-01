@@ -41,8 +41,12 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
         Log::info("REQUESTING COUPON FROM WOOHOO SERVER:");
 
         Log::info("Fetching order...");
-        $this->order = Order::with(['items', 'address'])->find($this->orderId);
+        $this->order = Order::with(['items', 'address', 'account'])->find($this->orderId);
 
+        $this->requestCoupon();
+    }
+
+    private function requestCoupon() {
         Log::info("Creating order...");
         try {
             $response = $this->getClient()->request(
@@ -77,7 +81,7 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      */
     private function getClient() {
         return new Client([
-            'base_uri' => env("WOOHOO_REWARDS_ENDPOINT"),
+            'base_uri' => $this->order->account->endpoint,
             'timeout' => 10.0,
             'headers' => $this->getHeaders()
         ]);
@@ -89,13 +93,12 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      * @return array
      */
     private function getHeaders() {
-        $configuration = Configuration::find(1);
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*',
-            'dateAtClient' => Carbon::now()->toISOString(),
+            'dateAtClient' => Carbon::now()->format('Y-m-d\TH:i:s.u\Z'),
             'signature' => $this->generateSignature(),
-            'Authorization' => 'Bearer ' . $configuration->token,
+            'Authorization' => 'Bearer ' . $this->order->account->token,
         ];
     }
 
@@ -111,7 +114,7 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
             rawurlencode(
                 json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
             )
-        ));
+        ), $this->order->account->client_secret);
     }
 
     /**
@@ -122,7 +125,7 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
     private function getUrl() {
         return sprintf(
             "%s%s",
-            env("WOOHOO_REWARDS_ENDPOINT"),
+            $this->order->account->endpoint,
             "/rest/v3/orders"
         );
     }

@@ -28,6 +28,9 @@ class FetchWoohooOrderStatus implements ShouldQueue {
     /** @var string ref no */
     private $ref_no;
 
+    /** @var Order order model */
+    private $order;
+
     /**
      * Constructor
      *
@@ -43,6 +46,9 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      */
     public function handle() {
         Log::info("FETCHING WOOHOO CARDS FOR ORDER:");
+
+        Log::info("Fetching order details...");
+        $this->order = Order::with(['account'])->where('order_id', $this->id)->first();
 
         Log::info("Fetching cards for order...");
         try {
@@ -71,7 +77,7 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      */
     private function getClient() {
         return new Client([
-            'base_uri' => env("WOOHOO_REWARDS_ENDPOINT"),
+            'base_uri' => $this->order->account->endpoint,
             'timeout' => 10.0,
             'headers' => $this->getHeaders()
         ]);
@@ -83,13 +89,12 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      * @return array
      */
     private function getHeaders() {
-        $configuration = Configuration::find(1);
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*',
-            'dateAtClient' => Carbon::now()->toISOString(),
+            'dateAtClient' => Carbon::now()->format('Y-m-d\TH:i:s.u\Z'),
             'signature' => $this->generateSignature(),
-            'Authorization' => 'Bearer ' . $configuration->token,
+            'Authorization' => 'Bearer ' . $this->order->account->token,
         ];
     }
 
@@ -97,7 +102,7 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      * Generate signature
      */
     private function generateSignature() {
-        return Utils::encryptSignature('GET' . '&' . rawurlencode($this->getUrl()));
+        return Utils::encryptSignature('GET' . '&' . rawurlencode($this->getUrl()), $this->order->account->client_secret);
     }
 
     /**
@@ -108,7 +113,7 @@ class FetchWoohooOrderStatus implements ShouldQueue {
     private function getUrl() {
         return sprintf(
             "%s%s",
-            env("WOOHOO_REWARDS_ENDPOINT"),
+            $this->order->account->endpoint,
             "/rest/v3/order/{$this->ref_no}/status"
         );
     }
@@ -119,24 +124,22 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      * @param $data
      */
     private function saveData($data) {
-        $order = Order::where('order_id', $this->id)->first();
-        $order->attempts = $order->attempts + 1;
+        $this->order->attempts = $this->order->attempts + 1;
 
         if ($data['status'] == Utils::$COMPLETE) {
             dispatch(new FetchWoohooOrderCards($this->id));
-        } else if (($data['status'] == Utils::$CANCELLED) || ($order->attempts >= 2)) {
-            $order->status = Utils::$CANCELLED;
+        } else if (($data['status'] == Utils::$CANCELLED) || ($this->order->attempts >= 2)) {
+            $this->order->status = Utils::$CANCELLED;
         }
-        $order->save();
+        $this->order->save();
     }
 
     /**
      * Mark order as failed
      */
     private function markOrderFailed() {
-        $order = Order::where('order_id', $this->id)->first();
-        $order->attempts = $order->attempts + 1;
-        $order->status = Utils::$CANCELLED;
-        $order->save();
+        $this->order->attempts = $order->attempts + 1;
+        $this->order->status = Utils::$CANCELLED;
+        $this->order->save();
     }
 }

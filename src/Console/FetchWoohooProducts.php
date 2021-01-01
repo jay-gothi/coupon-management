@@ -12,6 +12,7 @@ use Woohoo\GoapptivCoupon\Jobs\FetchWoohooProduct;
 use Woohoo\GoapptivCoupon\Models\Category;
 use Woohoo\GoapptivCoupon\Models\Configuration;
 use Woohoo\GoapptivCoupon\Models\Product;
+use Woohoo\GoapptivCoupon\Models\Account;
 use Woohoo\GoapptivCoupon\Utils;
 
 // TODO:: cron: every month
@@ -20,10 +21,11 @@ class FetchWoohooProducts extends Command {
     /** @var string request woohoo products command */
     protected $signature = 'fetch_woohoo_products';
 
-    /**
-     * Category
-     */
+    /** Category */
     private $category;
+
+    /** Account account model */
+    protected $account;
 
     /**
      * Constructor
@@ -40,7 +42,15 @@ class FetchWoohooProducts extends Command {
      */
     public function handle() {
         Log::info("FETCHING WOOHOO PRODUCTS:");
+
+        Log::info("Fetching first account...");
+        $this->account = Account::where('status', 'active')->first();
+
         Log::info("Fetching products...");
+        $this->fetchProducts();
+    }
+
+    private function fetchProducts() {
         try {
             $response = $this->getClient()->request('GET', $this->getUrl(), []);
             if ($response->getStatusCode() == 200) {
@@ -64,7 +74,7 @@ class FetchWoohooProducts extends Command {
      */
     private function getClient() {
         return new Client([
-            'base_uri' => env("WOOHOO_REWARDS_ENDPOINT"),
+            'base_uri' => $this->account->endpoint,
             'timeout' => 10.0,
             'headers' => $this->getHeaders()
         ]);
@@ -80,9 +90,9 @@ class FetchWoohooProducts extends Command {
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*',
-            'dateAtClient' => Carbon::now()->toISOString(),
+            'dateAtClient' => Carbon::now()->format('Y-m-d\TH:i:s.u\Z'),
             'signature' => $this->generateSignature(),
-            'Authorization' => 'Bearer ' . $configuration->token,
+            'Authorization' => 'Bearer ' . $this->account->token,
         ];
     }
 
@@ -94,7 +104,7 @@ class FetchWoohooProducts extends Command {
             '%s&%s',
             'GET',
             rawurlencode($this->getUrl())
-        ));
+        ), $this->account->client_secret);
     }
 
     /**
@@ -106,7 +116,7 @@ class FetchWoohooProducts extends Command {
         $category = Category::whereNull('parent_id')->first();
         return sprintf(
             "%s%s",
-            env("WOOHOO_REWARDS_ENDPOINT"),
+            $this->account->endpoint,
             "/rest/v3/catalog/categories/{$category->id}/products"
         );
     }
