@@ -87,10 +87,12 @@ class FetchWoohooProducts extends Command {
      */
     private function getHeaders() {
         $configuration = Configuration::find(1);
+        $date = Carbon::now();
+        $date = $date->setTimezone('UTC');
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*',
-            'dateAtClient' => Carbon::now()->format('Y-m-d\TH:i:s.u\Z'),
+            'dateAtClient' => $date->format('Y-m-d\TH:i:s.u\Z'),
             'signature' => $this->generateSignature(),
             'Authorization' => 'Bearer ' . $this->account->token,
         ];
