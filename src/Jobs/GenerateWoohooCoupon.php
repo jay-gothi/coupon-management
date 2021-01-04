@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Address;
 use Woohoo\GoapptivCoupon\Models\Order;
 use Woohoo\GoapptivCoupon\Models\OrderItem;
+use Woohoo\GoapptivCoupon\Models\Account;
 use Woohoo\GoapptivCoupon\Utils;
 
 class GenerateWoohooCoupon implements ShouldQueue {
