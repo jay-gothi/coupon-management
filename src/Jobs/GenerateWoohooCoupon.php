@@ -64,7 +64,7 @@ class GenerateWoohooCoupon implements ShouldQueue {
      * Save order details to db
      */
     private function createOrder() {
-        $account = Account::where('org_code', $this->request['org_name']);
+        $account = Account::where('org_code', $this->request['org_name'])->first();
         $address = Address::create([
             "first_name" => $this->request['full_name'],
             "last_name" => "GoApptiv",
