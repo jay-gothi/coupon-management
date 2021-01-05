@@ -51,7 +51,7 @@ class SendCouponEmail implements ShouldQueue {
                 "card_no" => Utils::decrypt($this->card['card_number']),
                 "card_pin" => Utils::decrypt($this->card['card_pin']),
                 'activation_url' => $this->card['activation_url']
-            ],
+            ]
         );
 
         return null;
