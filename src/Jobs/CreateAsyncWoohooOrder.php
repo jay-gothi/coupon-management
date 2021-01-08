@@ -188,6 +188,9 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      * @param $data
      */
     private function saveData($data) {
+        if (isset($data['payments']) && count($data['payments']) > 0) {
+            $this->order->current_balance = $data['payments'][0]['balance'];
+        }
         $this->order->order_id = $data['orderId'];
         $this->order->status = 'PROCESSING';
         $this->order->save();
