@@ -65,7 +65,7 @@ class FetchWoohooCategories extends Command {
         return sprintf(
             "%s%s",
             $this->account->endpoint,
-            "/rest/v3/catalog/categories"
+            "/rest/v3/catalog/categories/330?q=1"
         );
     }
 
