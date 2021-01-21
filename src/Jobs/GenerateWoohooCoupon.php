@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Address;
 use Woohoo\GoapptivCoupon\Models\Order;
 use Woohoo\GoapptivCoupon\Models\OrderItem;
+use Woohoo\GoapptivCoupon\Models\Account;
 use Woohoo\GoapptivCoupon\Utils;
 
 class GenerateWoohooCoupon implements ShouldQueue {
@@ -63,6 +64,7 @@ class GenerateWoohooCoupon implements ShouldQueue {
      * Save order details to db
      */
     private function createOrder() {
+        $account = Account::where('org_code', $this->request['org_name'])->first();
         $address = Address::create([
             "first_name" => $this->request['full_name'],
             "last_name" => "GoApptiv",
@@ -82,7 +84,9 @@ class GenerateWoohooCoupon implements ShouldQueue {
             'coupon_code' => '',
             'status' => 'PENDING',
             'delivery_mode' => 'API',
-            'org_code' => $this->request['org_code']
+            'account_id' => $account->id,
+            'org_code' => $this->request['org_code'],
+            'org_name' => $this->request['org_name']
         ]);
         OrderItem::create([
             "order_id" => $order->id,

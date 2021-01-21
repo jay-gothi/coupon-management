@@ -13,6 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Configuration;
 use Woohoo\GoapptivCoupon\Models\Product;
+use Woohoo\GoapptivCoupon\Models\Account;
 
 class FetchWoohooProduct implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -25,8 +26,7 @@ class FetchWoohooProduct implements ShouldQueue {
     /**
      * Configuration model
      */
-    private $configuration;
-
+    private $account;
 
     /**
      * Create a new job instance.
@@ -41,13 +41,22 @@ class FetchWoohooProduct implements ShouldQueue {
      * Execute the console command.
      */
     public function handle() {
-        $this->configuration = Configuration::find(1);
-
         Log::info("FETCHING WOOHOO PRODUCT:");
 
-        Log::info("Fetching product...");
-        $client = $this->getClient();
+        Log::info("Fetching first active account...");
+        $this->account = Account::where('status', 'active')->first();
 
+        Log::info("Fetching product...");
+        $this->fetchProducts();
+
+        Log::info('FETCHED WOOHOO PRODUCTS.');
+    }
+
+    /**
+     * Fetch products
+     */
+    private function fetchProducts() {
+        $client = $this->getClient();
         try {
             $response = $client->request('GET', $this->getUrl(), []);
             if ($response->getStatusCode() == 200) {
@@ -58,7 +67,6 @@ class FetchWoohooProduct implements ShouldQueue {
             Log::info("Token generation Failed.");
             Log::error($e->getMessage());
         }
-        Log::info('FETCHED WOOHOO PRODUCTS.');
     }
 
     /**
@@ -80,12 +88,14 @@ class FetchWoohooProduct implements ShouldQueue {
      * @return array
      */
     private function getHeaders() {
+        $date = Carbon::now();
+        $date = $date->setTimezone('UTC');
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*',
-            'dateAtClient' => Carbon::now()->toISOString(),
+            'dateAtClient' => $date->format('Y-m-d\TH:i:s.u\Z'),
             'signature' => $this->generateSignature(),
-            'Authorization' => 'Bearer ' . $this->configuration->token,
+            'Authorization' => 'Bearer ' . $this->account->token,
         ];
     }
 
@@ -94,7 +104,7 @@ class FetchWoohooProduct implements ShouldQueue {
      */
     private function generateSignature() {
         $baseString = 'GET' . '&' . rawurlencode($this->getUrl());
-        return hash_hmac('sha512', $baseString, env('WOOHOO_CLIENT_SECRET'));
+        return hash_hmac('sha512', $baseString, $this->account->client_secret);
     }
 
     /**
@@ -105,7 +115,7 @@ class FetchWoohooProduct implements ShouldQueue {
     private function getUrl() {
         return sprintf(
             "%s%s",
-            env("WOOHOO_REWARDS_ENDPOINT"),
+            $this->account->endpoint,
             "/rest/v3/catalog/products/{$this->sku}"
         );
     }

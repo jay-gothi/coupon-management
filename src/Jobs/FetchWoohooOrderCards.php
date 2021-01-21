@@ -24,6 +24,9 @@ class FetchWoohooOrderCards implements ShouldQueue {
     /** @var int order id */
     private $id;
 
+    /** $var Order order */
+    private $order;
+
     /**
      * Constructor
      *
@@ -39,7 +42,17 @@ class FetchWoohooOrderCards implements ShouldQueue {
     public function handle() {
         Log::info("FETCHING WOOHOO CARDS FOR ORDER:");
 
+        Log::info("Fetching order for : ". $this->id);
+        $this->order = Order::with(['account'])->where('order_id', $this->id)->first();
+
         Log::info("Fetching cards for order...");
+        $this->fetchCards();
+    }
+
+    /**
+     * Fetch cards
+     */
+    private function fetchCards() {
         try {
             $response = $this->getClient()->request('GET', $this->getUrl(), []);
             if ($response->getStatusCode() == 200) {
@@ -64,7 +77,7 @@ class FetchWoohooOrderCards implements ShouldQueue {
      */
     private function getClient() {
         return new Client([
-            'base_uri' => env("WOOHOO_REWARDS_ENDPOINT"),
+            'base_uri' => $this->order->account->endpoint,
             'timeout' => 10.0,
             'headers' => $this->getHeaders()
         ]);
@@ -76,13 +89,14 @@ class FetchWoohooOrderCards implements ShouldQueue {
      * @return array
      */
     private function getHeaders() {
-        $configuration = Configuration::find(1);
+        $date = Carbon::now();
+        $date = $date->setTimezone('UTC');
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*',
-            'dateAtClient' => Carbon::now()->toISOString(),
+            'dateAtClient' => $date->format('Y-m-d\TH:i:s.u\Z'),
             'signature' => $this->generateSignature(),
-            'Authorization' => 'Bearer ' . $configuration->token,
+            'Authorization' => 'Bearer ' . $this->order->account->token,
         ];
     }
 
@@ -90,7 +104,8 @@ class FetchWoohooOrderCards implements ShouldQueue {
      * Generate signature
      */
     private function generateSignature() {
-        return Utils::encryptSignature('GET' . '&' . rawurlencode($this->getUrl()));
+        return Utils::encryptSignature('GET' . '&' . rawurlencode($this->getUrl()),
+            $this->order->account->client_secret);
     }
 
     /**
@@ -101,7 +116,7 @@ class FetchWoohooOrderCards implements ShouldQueue {
     private function getUrl() {
         return sprintf(
             "%s%s",
-            env("WOOHOO_REWARDS_ENDPOINT"),
+            $this->order->account->endpoint,
             "/rest/v3/order/{$this->id}/cards"
         );
     }
@@ -112,7 +127,6 @@ class FetchWoohooOrderCards implements ShouldQueue {
      * @param $data
      */
     private function saveData($data) {
-        $order = Order::where('order_id', $this->id)->first();
         if (isset($data['cards'])) {
             foreach ($data['cards'] as $card) {
                 $cardModel = Card::firstOrNew([
@@ -125,7 +139,7 @@ class FetchWoohooOrderCards implements ShouldQueue {
                     'recipient_details' => json_encode($card['recipientDetails'])
                 ]);
                 $cardModel->fill([
-                    "order_id" => $order->id,
+                    "order_id" => $this->order->id,
                     "card_number" => Utils::encrypt($card['cardNumber']),
                     "card_pin" => Utils::encrypt($card['cardPin'])
                 ]);
@@ -133,8 +147,8 @@ class FetchWoohooOrderCards implements ShouldQueue {
                 $cardModel->refresh();
                 dispatch(new SendCouponEmail($cardModel->toArray()));
             }
-            $order->status = 'COMPLETE';
-            $order->save();
+            $this->order->status = 'COMPLETE';
+            $this->order->save();
         }
     }
 }

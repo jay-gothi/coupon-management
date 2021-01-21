@@ -27,10 +27,19 @@ class FetchCards extends Command {
         Log::info("INITIALIZING CARD FETCH:");
 
         Log::info("Fetch processing orders...");
-        $orders = Order::where('status', "PROCESSING")->paginate(10);
+        $orders = $this->getFirst10ProcessingOrders();
+
         $orders->map(function ($order) {
             dispatch(new FetchWoohooOrderStatus($order->ref_no, $order->order_id));
         });
+
         Log::info("INITIATED CARDS FETCH.");
+    }
+
+    /**
+     * Get first 10 under process order
+     */
+    private function getFirst10ProcessingOrders() {
+        return Order::where('status', "PROCESSING")->paginate(10);
     }
 }

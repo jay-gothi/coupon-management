@@ -30,6 +30,7 @@ class CreateOrdersTable extends Migration {
         Schema::create('woohoo_orders', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('order_id')->nullable();
+            $table->bigInteger('account_id')->nullable();
             $table->string('ref_no');
             $table->bigInteger('address_id');
             $table->bigInteger('billing_id')->nullable();

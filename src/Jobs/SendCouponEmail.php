@@ -37,7 +37,7 @@ class SendCouponEmail implements ShouldQueue {
         $template_id = "coupon-code-email";
         if (isset($this->card['activation_url']) && !is_null($this->card['activation_url']))
             $template_id = "coupon-code-email-activation";
-        
+
         $client->sendEmailWithTemplate(
             "info@goapptiv.com",
             $this->card['recipient_details']['email'],
@@ -51,7 +51,7 @@ class SendCouponEmail implements ShouldQueue {
                 "card_no" => Utils::decrypt($this->card['card_number']),
                 "card_pin" => Utils::decrypt($this->card['card_pin']),
                 'activation_url' => $this->card['activation_url']
-            ],
+            ]
         );
 
         return null;

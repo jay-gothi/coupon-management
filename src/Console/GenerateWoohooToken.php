@@ -9,8 +9,10 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Configuration;
 use Woohoo\GoapptivCoupon\Utils;
+use Woohoo\GoapptivCoupon\Jobs\GenerateWoohooTokenForAccount;
+use Woohoo\GoapptivCoupon\Models\Account;
 
-// TODO:: cron: every month
+// TODO:: cron: every 7 days
 class GenerateWoohooToken extends Command {
 
     /** @var string generate woohoo token command.*/
@@ -28,79 +30,20 @@ class GenerateWoohooToken extends Command {
      * using credentials
      */
     public function handle() {
-        Log::info("REQUESTING AUTH TOKEN FROM WOOHOO SERVER:");
+        Log::info("REQUESTING AUTH TOKEN FOR ALL ACCOUNTS:");
 
-        Log::info("Requesting token...");
-        $client = $this->getClient();
-
-        try {
-            $response = $client->request(
-                'POST',
-                env("WOOHOO_REWARDS_ENDPOINT") . '/oauth2/verify',
-                ['body' => json_encode($this->prepareBody())]
-            );
-            if ($response->getStatusCode() == 200) {
-                Log::info('Saving token...');
-                $this->saveToken(json_decode($response->getBody(), true));
-                Log::info('WOOHOO TOKEN SAVED.');
-            }
-        } catch (RequestException $e) {
-            Log::error($e->getMessage());
-            Log::info("TOKEN GENERATION FAILED.");
-        } catch (GuzzleException $e) {
-            Log::error($e->getMessage());
-            Log::info("TOKEN GENERATION FAILED.");
+        $accounts = $this->getListOfAccounts();
+        foreach($accounts as $account) {
+            dispatch(new GenerateWoohooTokenForAccount($account->id));
         }
+
+        Log::info("TOKEN REQUEST RAISED FOR ALL THE ACCOUNTS:");
     }
 
     /**
-     * Get request client
-     *
-     * @return Client
+     * Get list of accounts
      */
-    private function getClient() {
-        return new Client([
-            'base_uri' => env("WOOHOO_REWARDS_ENDPOINT"),
-            'timeout' => Utils::$REQUEST_TIMEOUT,
-            'headers' => $this->getHeaders()
-        ]);
-    }
-
-    /**
-     * Get headers
-     *
-     * @return array
-     */
-    private function getHeaders() {
-        return [
-            'Content-Type' => 'application/json',
-            'Accept' => '*/*'
-        ];
-    }
-
-    /**
-     * Prepare request data
-     *
-     * @return array
-     */
-    private function prepareBody() {
-        return [
-            "clientId" => env('WOOHOO_CLIENT_ID'),
-            "username" => env('CREDENCE_LOGIN_USERNAME'),
-            "password" => env('CREDENCE_LOGIN_PASSWORD'),
-        ];
-    }
-
-    /**
-     * Save woohoo token in configuration
-     *
-     * @param $data
-     */
-    private function saveToken($data) {
-        $configuration = Configuration::with([])->firstOrNew(["id" => 1]);
-        $configuration->fill([
-            'authorization_code' => $data['authorizationCode']
-        ]);
-        $configuration->save();
+    private function getListOfAccounts() {
+        return Account::with([])->get();
     }
 }

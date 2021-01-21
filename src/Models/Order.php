@@ -4,6 +4,7 @@ namespace Woohoo\GoapptivCoupon\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Woohoo\GoapptivCoupon\Models\Account;
 
 class Order extends TraceableBaseModel {
 
@@ -39,5 +40,14 @@ class Order extends TraceableBaseModel {
      */
     public function cards() {
         return $this->hasMany(Card::class);
+    }
+
+    /**
+     * Account relation
+     *
+     * @return BelongsTo
+     */
+    public function account() {
+        return $this->belongsTo(Account::class);
     }
 }

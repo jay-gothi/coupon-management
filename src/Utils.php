@@ -22,8 +22,8 @@ class Utils {
      * @param $signature
      * @return string
      */
-    static function encryptSignature($signature) {
-        return hash_hmac('sha512', $signature, env('WOOHOO_CLIENT_SECRET'));
+    static function encryptSignature($signature, $secret) {
+        return hash_hmac('sha512', $signature, $secret);
     }
 
     /**
@@ -96,6 +96,7 @@ class Utils {
      * @return string
      */
     public static function convertToRefNo($id) {
-        return sprintf("GA-%s", $id);
+        $initial = env('WOOHOO_ORDER_PREFIX');
+        return sprintf("$initial-%s", $id);
     }
 }
