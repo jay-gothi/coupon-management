@@ -40,6 +40,6 @@ class FetchCards extends Command {
      * Get first 10 under process order
      */
     private function getFirst10ProcessingOrders() {
-        return Order::where('status', "PROCESSING")->paginate(10);
+        return Order::where('status', "PROCESSING")->paginate(50);
     }
 }
