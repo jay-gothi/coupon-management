@@ -140,7 +140,7 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      * Mark order as failed
      */
     private function markOrderFailed() {
-        $this->order->attempts = $order->attempts + 1;
+        $this->order->attempts = $this->order->attempts + 1;
         $this->order->status = Utils::$CANCELLED;
         $this->order->save();
     }
