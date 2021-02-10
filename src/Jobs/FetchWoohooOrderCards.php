@@ -131,6 +131,7 @@ class FetchWoohooOrderCards implements ShouldQueue {
             foreach ($data['cards'] as $card) {
                 $cardModel = Card::firstOrNew([
                     "sku" => $card['sku'],
+                    "order_id" => $this->order->id,
                     "product_name" => $card['productName'],
                     "activation_code" => $card['activationCode'],
                     "activation_url" => $card['activationUrl'],
@@ -139,7 +140,6 @@ class FetchWoohooOrderCards implements ShouldQueue {
                     'recipient_details' => json_encode($card['recipientDetails'])
                 ]);
                 $cardModel->fill([
-                    "order_id" => $this->order->id,
                     "card_number" => Utils::encrypt($card['cardNumber']),
                     "card_pin" => Utils::encrypt($card['cardPin'])
                 ]);
