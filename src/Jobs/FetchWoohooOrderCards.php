@@ -145,7 +145,7 @@ class FetchWoohooOrderCards implements ShouldQueue {
                 ]);
                 $cardModel->save();
                 $cardModel->refresh();
-                dispatch(new SendCouponEmail($cardModel->toArray()));
+                // dispatch(new SendCouponEmail($cardModel->toArray()));
             }
             $this->order->status = 'COMPLETE';
             $this->order->save();
