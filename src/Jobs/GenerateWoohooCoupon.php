@@ -14,8 +14,12 @@ use Woohoo\GoapptivCoupon\Models\OrderItem;
 use Woohoo\GoapptivCoupon\Models\Account;
 use Woohoo\GoapptivCoupon\Utils;
 
-class GenerateWoohooCoupon implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class GenerateWoohooCoupon implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /** @var array Coupon request */
     private $request;
@@ -32,16 +36,19 @@ class GenerateWoohooCoupon implements ShouldQueue {
      * @param $request
      * @param $sku
      */
-    public function __construct($request, $sku) {
+    public function __construct($request, $sku)
+    {
         $this->request = $request;
         $this->sku = $sku;
         $this->connection = 'sync';
+        $this->queue = 'wohoo_coupon_queue';
     }
 
     /**
      * Request for woohoo coupon
      */
-    public function handle() {
+    public function handle()
+    {
         Log::info("RAISING COUPON REQUEST:");
 
         Log::info("Creating order...");
@@ -56,14 +63,16 @@ class GenerateWoohooCoupon implements ShouldQueue {
      *
      * @return Order
      */
-    public function getResponse() {
+    public function getResponse()
+    {
         return $this->order;
     }
 
     /**
      * Save order details to db
      */
-    private function createOrder() {
+    private function createOrder()
+    {
         $account = Account::where('org_code', $this->request['org_name'])->first();
         $address = Address::create([
             "first_name" => $this->request['full_name'],

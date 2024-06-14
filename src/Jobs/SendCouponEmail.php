@@ -12,8 +12,12 @@ use Postmark\PostmarkClient;
 use Woohoo\GoapptivCoupon\Models\Product;
 use Woohoo\GoapptivCoupon\Utils;
 
-class SendCouponEmail implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class SendCouponEmail implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /** card data */
     private $card;
@@ -23,20 +27,24 @@ class SendCouponEmail implements ShouldQueue {
      *
      * @param $card
      */
-    public function __construct($card) {
+    public function __construct($card)
+    {
         $this->card = $card;
+        $this->queue = 'wohoo_coupon_queue';
     }
 
     /**
      * Send email
      */
-    public function handle() {
+    public function handle()
+    {
         $client = new PostmarkClient(env('POSTMARK_SECRET'));
         $product = Product::where('sku', $this->card['sku'])->first();
 
         $template_id = "coupon-code-email";
-        if (isset($this->card['activation_url']) && !is_null($this->card['activation_url']))
+        if (isset($this->card['activation_url']) && !is_null($this->card['activation_url'])) {
             $template_id = "coupon-code-email-activation";
+        }
 
         $client->sendEmailWithTemplate(
             "info@goapptiv.com",
