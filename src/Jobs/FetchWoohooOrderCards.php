@@ -18,8 +18,12 @@ use Woohoo\GoapptivCoupon\Models\Configuration;
 use Woohoo\GoapptivCoupon\Models\Order;
 use Woohoo\GoapptivCoupon\Utils;
 
-class FetchWoohooOrderCards implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class FetchWoohooOrderCards implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /** @var int order id */
     private $id;
@@ -32,14 +36,17 @@ class FetchWoohooOrderCards implements ShouldQueue {
      *
      * @param $id
      */
-    public function __construct($id) {
+    public function __construct($id)
+    {
         $this->id = $id;
+        $this->queue = 'wohoo_coupon_queue';
     }
 
     /**
      * Get cards for order
      */
-    public function handle() {
+    public function handle()
+    {
         Log::info("FETCHING WOOHOO CARDS FOR ORDER:");
 
         Log::info("Fetching order for : ". $this->id);
@@ -52,7 +59,8 @@ class FetchWoohooOrderCards implements ShouldQueue {
     /**
      * Fetch cards
      */
-    private function fetchCards() {
+    private function fetchCards()
+    {
         try {
             $response = $this->getClient()->request('GET', $this->getUrl(), []);
             if ($response->getStatusCode() == 200) {
@@ -75,7 +83,8 @@ class FetchWoohooOrderCards implements ShouldQueue {
      *
      * @return Client
      */
-    private function getClient() {
+    private function getClient()
+    {
         return new Client([
             'base_uri' => $this->order->account->endpoint,
             'timeout' => 10.0,
@@ -88,7 +97,8 @@ class FetchWoohooOrderCards implements ShouldQueue {
      *
      * @return array
      */
-    private function getHeaders() {
+    private function getHeaders()
+    {
         $date = Carbon::now();
         $date = $date->setTimezone('UTC');
         return [
@@ -103,9 +113,12 @@ class FetchWoohooOrderCards implements ShouldQueue {
     /**
      * Generate signature
      */
-    private function generateSignature() {
-        return Utils::encryptSignature('GET' . '&' . rawurlencode($this->getUrl()), 
-            $this->order->account->client_secret);
+    private function generateSignature()
+    {
+        return Utils::encryptSignature(
+            'GET' . '&' . rawurlencode($this->getUrl()),
+            $this->order->account->client_secret
+        );
     }
 
     /**
@@ -113,7 +126,8 @@ class FetchWoohooOrderCards implements ShouldQueue {
      *
      * @return string
      */
-    private function getUrl() {
+    private function getUrl()
+    {
         return sprintf(
             "%s%s",
             $this->order->account->endpoint,
@@ -126,7 +140,8 @@ class FetchWoohooOrderCards implements ShouldQueue {
      *
      * @param $data
      */
-    private function saveData($data) {
+    private function saveData($data)
+    {
         if (isset($data['cards'])) {
             foreach ($data['cards'] as $card) {
                 $cardModel = Card::firstOrNew([

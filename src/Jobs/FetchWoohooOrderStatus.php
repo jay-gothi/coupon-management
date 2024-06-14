@@ -19,8 +19,12 @@ use Woohoo\GoapptivCoupon\Models\Order;
 use Woohoo\GoapptivCoupon\Utils;
 use Woohoo\GoapptivCoupon\Jobs\FetchWoohooOrderCards;
 
-class FetchWoohooOrderStatus implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class FetchWoohooOrderStatus implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /** @var int order id */
     private $id;
@@ -36,15 +40,18 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      *
      * @param $id
      */
-    public function __construct($ref_no, $id) {
+    public function __construct($ref_no, $id)
+    {
         $this->id = $id;
         $this->ref_no = $ref_no;
+        $this->queue = 'wohoo_coupon_queue';
     }
 
     /**
      * Get cards for order
      */
-    public function handle() {
+    public function handle()
+    {
         Log::info("FETCHING WOOHOO CARDS FOR ORDER:");
 
         Log::info("Fetching order details...");
@@ -75,7 +82,8 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      *
      * @return Client
      */
-    private function getClient() {
+    private function getClient()
+    {
         return new Client([
             'base_uri' => $this->order->account->endpoint,
             'timeout' => 10.0,
@@ -88,7 +96,8 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      *
      * @return array
      */
-    private function getHeaders() {
+    private function getHeaders()
+    {
         $date = Carbon::now();
         $date = $date->setTimezone('UTC');
         return [
@@ -103,7 +112,8 @@ class FetchWoohooOrderStatus implements ShouldQueue {
     /**
      * Generate signature
      */
-    private function generateSignature() {
+    private function generateSignature()
+    {
         return Utils::encryptSignature('GET' . '&' . rawurlencode($this->getUrl()), $this->order->account->client_secret);
     }
 
@@ -112,7 +122,8 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      *
      * @return string
      */
-    private function getUrl() {
+    private function getUrl()
+    {
         return sprintf(
             "%s%s",
             $this->order->account->endpoint,
@@ -125,12 +136,13 @@ class FetchWoohooOrderStatus implements ShouldQueue {
      *
      * @param $data
      */
-    private function saveData($data) {
+    private function saveData($data)
+    {
         $this->order->attempts = $this->order->attempts + 1;
 
         if ($data['status'] == Utils::$COMPLETE) {
             dispatch(new FetchWoohooOrderCards($this->id));
-        } else if (($data['status'] == Utils::$CANCELLED) || ($this->order->attempts >= 2)) {
+        } elseif (($data['status'] == Utils::$CANCELLED) || ($this->order->attempts >= 2)) {
             $this->order->status = Utils::$CANCELLED;
         }
         $this->order->save();
@@ -139,7 +151,8 @@ class FetchWoohooOrderStatus implements ShouldQueue {
     /**
      * Mark order as failed
      */
-    private function markOrderFailed() {
+    private function markOrderFailed()
+    {
         $this->order->attempts = $this->order->attempts + 1;
         $this->order->status = Utils::$CANCELLED;
         $this->order->save();
