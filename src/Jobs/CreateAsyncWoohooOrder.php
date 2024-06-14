@@ -16,8 +16,12 @@ use Woohoo\GoapptivCoupon\Models\Configuration;
 use Woohoo\GoapptivCoupon\Models\Order;
 use Woohoo\GoapptivCoupon\Utils;
 
-class CreateAsyncWoohooOrder implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class CreateAsyncWoohooOrder implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /** @var int order id */
     private $orderId;
@@ -30,14 +34,17 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      *
      * @param $orderId
      */
-    public function __construct($orderId) {
+    public function __construct($orderId)
+    {
         $this->orderId = $orderId;
+        $this->queue = 'wohoo_coupon_queue';
     }
 
     /**
      * Request for woohoo coupon
      */
-    public function handle() {
+    public function handle()
+    {
         Log::info("REQUESTING COUPON FROM WOOHOO SERVER:");
 
         Log::info("Fetching order...");
@@ -46,7 +53,8 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
         $this->requestCoupon();
     }
 
-    private function requestCoupon() {
+    private function requestCoupon()
+    {
         Log::info("Creating order...");
         try {
             $response = $this->getClient()->request(
@@ -79,7 +87,8 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      *
      * @return Client
      */
-    private function getClient() {
+    private function getClient()
+    {
         return new Client([
             'base_uri' => $this->order->account->endpoint,
             'timeout' => 10.0,
@@ -92,7 +101,8 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      *
      * @return array
      */
-    private function getHeaders() {
+    private function getHeaders()
+    {
         $date = Carbon::now();
         $date = $date->setTimezone('UTC');
         return [
@@ -107,10 +117,12 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
     /**
      * Generate signature
      */
-    private function generateSignature() {
+    private function generateSignature()
+    {
         $data = $this->prepareData();
         Utils::sortParams($data);
-        return Utils::encryptSignature(sprintf('%s&%s&%s',
+        return Utils::encryptSignature(sprintf(
+            '%s&%s&%s',
             'POST',
             rawurlencode($this->getUrl()),
             rawurlencode(
@@ -124,7 +136,8 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      *
      * @return string
      */
-    private function getUrl() {
+    private function getUrl()
+    {
         return sprintf(
             "%s%s",
             $this->order->account->endpoint,
@@ -138,7 +151,8 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      * @return array
 
      */
-    private function prepareData() {
+    private function prepareData()
+    {
         return [
             "address" => [
                 "firstname" => $this->order->address->first_name,
@@ -187,7 +201,8 @@ class CreateAsyncWoohooOrder implements ShouldQueue {
      *
      * @param $data
      */
-    private function saveData($data) {
+    private function saveData($data)
+    {
         if (isset($data['payments']) && count($data['payments']) > 0) {
             $this->order->current_balance = $data['payments'][0]['balance'];
         }

@@ -15,8 +15,12 @@ use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Account;
 use Woohoo\GoapptivCoupon\Utils;
 
-class GenerateWoohooBearerTokenForAccount implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class GenerateWoohooBearerTokenForAccount implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /** @var int account id */
     private $accountId;
@@ -29,25 +33,29 @@ class GenerateWoohooBearerTokenForAccount implements ShouldQueue {
      *
      * @param $orderId
      */
-    public function __construct($accountId) {
+    public function __construct($accountId)
+    {
         $this->accountId = $accountId;
+        $this->queue = 'wohoo_coupon_queue';
     }
 
     /**
      * Request bearer token from woohoo server
      * using the credentials
      */
-    public function handle() {
+    public function handle()
+    {
         Log::info("REQUESTING BEARER TOKEN FOR ACCOUNT: ". $this->accountId);
 
         Log::info("Fetching account...");
         $this->account = Account::with([])->find($this->accountId);
-        
+
         Log::info("Requesting token...");
         $this->requestToken();
     }
 
-    private function requestToken() {
+    private function requestToken()
+    {
         $client = $this->getClient();
 
         try {
@@ -75,7 +83,8 @@ class GenerateWoohooBearerTokenForAccount implements ShouldQueue {
      *
      * @return Client
      */
-    private function getClient() {
+    private function getClient()
+    {
         return new Client([
             'base_uri' => $this->account->endpoint,
             'timeout' => 10.0,
@@ -88,7 +97,8 @@ class GenerateWoohooBearerTokenForAccount implements ShouldQueue {
      *
      * @return array
      */
-    private function getHeaders() {
+    private function getHeaders()
+    {
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*'
@@ -100,7 +110,8 @@ class GenerateWoohooBearerTokenForAccount implements ShouldQueue {
      *
      * @return array
      */
-    private function prepareData() {
+    private function prepareData()
+    {
         return [
             "clientId" => $this->account->client_id,
             "clientSecret" => $this->account->client_secret,
@@ -113,7 +124,8 @@ class GenerateWoohooBearerTokenForAccount implements ShouldQueue {
      *
      * @param $data
      */
-    private function saveToken($data) {
+    private function saveToken($data)
+    {
         $this->account->fill(['token' => $data['token']]);
         $this->account->save();
     }
