@@ -15,8 +15,12 @@ use Illuminate\Support\Facades\Log;
 use Woohoo\GoapptivCoupon\Models\Account;
 use Woohoo\GoapptivCoupon\Utils;
 
-class GenerateWoohooTokenForAccount implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class GenerateWoohooTokenForAccount implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /** @var int account id */
     private $accountId;
@@ -29,8 +33,10 @@ class GenerateWoohooTokenForAccount implements ShouldQueue {
      *
      * @param $orderId
      */
-    public function __construct($accountId) {
+    public function __construct($accountId)
+    {
         $this->accountId = $accountId;
+        $this->queue = 'wohoo_coupon_queue';
     }
 
     /**
@@ -38,7 +44,8 @@ class GenerateWoohooTokenForAccount implements ShouldQueue {
      *
      * using credentials
      */
-    public function handle() {
+    public function handle()
+    {
         Log::info("REQUESTING AUTH TOKEN FROM WOOHOO SERVER FOR ACCOUNT:" . $this->accountId);
 
         Log::info("Fetching account...");
@@ -51,7 +58,8 @@ class GenerateWoohooTokenForAccount implements ShouldQueue {
     /**
      * Request token for account from woohoo server
      */
-    private function requestToken() {
+    private function requestToken()
+    {
         $client = $this->getClient();
         try {
             $response = $client->request(
@@ -78,7 +86,8 @@ class GenerateWoohooTokenForAccount implements ShouldQueue {
      *
      * @return Client
      */
-    private function getClient() {
+    private function getClient()
+    {
         return new Client([
             'base_uri' => $this->account->endpoint,
             'timeout' => Utils::$REQUEST_TIMEOUT,
@@ -91,7 +100,8 @@ class GenerateWoohooTokenForAccount implements ShouldQueue {
      *
      * @return array
      */
-    private function getHeaders() {
+    private function getHeaders()
+    {
         return [
             'Content-Type' => 'application/json',
             'Accept' => '*/*'
@@ -103,7 +113,8 @@ class GenerateWoohooTokenForAccount implements ShouldQueue {
      *
      * @return array
      */
-    private function prepareBody() {
+    private function prepareBody()
+    {
         return [
             "clientId" => $this->account->client_id,
             "username" => $this->account->login_username,
@@ -116,7 +127,8 @@ class GenerateWoohooTokenForAccount implements ShouldQueue {
      *
      * @param $data
      */
-    private function saveToken($data) {
+    private function saveToken($data)
+    {
         $this->account->fill([
             'authorization_code' => $data['authorizationCode']
         ]);

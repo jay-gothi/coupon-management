@@ -15,8 +15,12 @@ use Woohoo\GoapptivCoupon\Models\Configuration;
 use Woohoo\GoapptivCoupon\Models\Product;
 use Woohoo\GoapptivCoupon\Models\Account;
 
-class FetchWoohooProduct implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class FetchWoohooProduct implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * Invoice id to approve
@@ -33,14 +37,17 @@ class FetchWoohooProduct implements ShouldQueue {
      *
      * @param $sku
      */
-    public function __construct($sku) {
+    public function __construct($sku)
+    {
         $this->sku = $sku;
+        $this->queue = 'wohoo_coupon_queue';
     }
 
     /**
      * Execute the console command.
      */
-    public function handle() {
+    public function handle()
+    {
         Log::info("FETCHING WOOHOO PRODUCT:");
 
         Log::info("Fetching first active account...");
@@ -55,7 +62,8 @@ class FetchWoohooProduct implements ShouldQueue {
     /**
      * Fetch products
      */
-    private function fetchProducts() {
+    private function fetchProducts()
+    {
         $client = $this->getClient();
         try {
             $response = $client->request('GET', $this->getUrl(), []);
@@ -74,7 +82,8 @@ class FetchWoohooProduct implements ShouldQueue {
      *
      * @return Client
      */
-    private function getClient() {
+    private function getClient()
+    {
         return new Client([
             'base_uri' => env("WOOHOO_REWARDS_ENDPOINT"),
             'timeout' => 10.0,
@@ -87,7 +96,8 @@ class FetchWoohooProduct implements ShouldQueue {
      *
      * @return array
      */
-    private function getHeaders() {
+    private function getHeaders()
+    {
         $date = Carbon::now();
         $date = $date->setTimezone('UTC');
         return [
@@ -102,7 +112,8 @@ class FetchWoohooProduct implements ShouldQueue {
     /**
      * Generate signature
      */
-    private function generateSignature() {
+    private function generateSignature()
+    {
         $baseString = 'GET' . '&' . rawurlencode($this->getUrl());
         return hash_hmac('sha512', $baseString, $this->account->client_secret);
     }
@@ -112,7 +123,8 @@ class FetchWoohooProduct implements ShouldQueue {
      *
      * @return string
      */
-    private function getUrl() {
+    private function getUrl()
+    {
         return sprintf(
             "%s%s",
             $this->account->endpoint,
@@ -125,7 +137,8 @@ class FetchWoohooProduct implements ShouldQueue {
      *
      * @param $product
      */
-    private function createProduct($product) {
+    private function createProduct($product)
+    {
         $productModel = Product::firstOrNew([
             'sku' => $product['sku'],
             'name' => $product['name']
