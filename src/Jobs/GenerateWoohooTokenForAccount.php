@@ -50,7 +50,6 @@ class GenerateWoohooTokenForAccount implements ShouldQueue
 
         Log::info("Fetching account...");
         $this->account = Account::with([])->find($this->accountId);
-
         Log::info("Requesting token...");
         $this->requestToken();
     }
