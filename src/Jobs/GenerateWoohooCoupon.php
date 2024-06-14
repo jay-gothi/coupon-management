@@ -41,7 +41,6 @@ class GenerateWoohooCoupon implements ShouldQueue
         $this->request = $request;
         $this->sku = $sku;
         $this->queue = 'wohoo_coupon_queue';
-        $this->connection = 'sync';
     }
 
     /**
@@ -54,7 +53,6 @@ class GenerateWoohooCoupon implements ShouldQueue
         Log::info("Creating order...");
         $this->order = $this->createOrder();
         dispatch(new CreateAsyncWoohooOrder($this->order->id));
-
         Log::info("COUPON REQUEST RAISED.");
     }
 
